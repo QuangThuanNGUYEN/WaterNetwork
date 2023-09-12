@@ -22,10 +22,10 @@ class WaterNetwork:
     
         
     class Node:
-        def __init__(self, key, x, y, type):
+        def __init__(self, key, x, y):
             self._key = key
             self._coordinates = Coordinates(x, y)
-            self._type = type
+            self._type = []
             
             
         def __str__(self):
@@ -59,7 +59,7 @@ class WaterNetwork:
         num_of_links = len(self._edge_list[root._key])
         while current_index < num_of_links:
             next_node = self._node_list[self._edge_list[root._key][current_index]]
-            if next_node._type == 'junction':
+            if 'junction' in next_node._type:
                 if next_node._key in flow_rate.keys():
                     flow_rate[next_node._key] += 1
                 else:
@@ -72,7 +72,7 @@ class WaterNetwork:
     def find_junction_by_range(self, x1, y1, x2, y2):
         junctions = {}
         for i in range(len(self._size)):
-            if self._node_list[i]._type == 'junction':
+            if 'junction' in self._node_list[i]._type:
                 x = self._node_list[i]._x
                 y = self._node_list[i]._y
                 if x > x1 and x < x2 and y > y1 and y < y2:
@@ -84,7 +84,7 @@ class WaterNetwork:
         flow_rate = {}
         for i in range(self._size):
             try:
-                if self._node_list[i]._type == 'headwater':
+                if 'headwater' in self._node_list[i]._type:
                     self.traverse_to_sea(self._node_list[i], flow_rate)
             except:
                 continue
@@ -124,7 +124,7 @@ class WaterNetwork:
             type = self._node_list[node]._type 
             x = self._node_list[node]._coordinates._x 
             y = self._node_list[node]._coordinates._y 
-            if type == 'headwater' and x > coord1._x and x < coord2._x and y > coord1._y and y < coord2._y:
+            if 'headwater' in type and x > coord1._x and x < coord2._x and y > coord1._y and y < coord2._y:
                 head_water[node] = self._node_list[node]
                 
         return head_water
@@ -150,22 +150,15 @@ class WaterNetwork:
         num_of_links = len(self._edge_list[root._key])
         while current_index < num_of_links:
             next_node = self._node_list[self._edge_list[root._key][current_index]]
-            if next_node._type == 'junction':
+            if 'junction' in next_node._type:
                 if visited[next_node._key] == 0:
-                    if block_flow._type == 'headwater':
+                    if 'headwater' in block_flow._type:
                         flow_rate[next_node._key] -= 1
                     else:
                         flow_rate[next_node._key] -= flow_rate[block_flow._key]
                     visited[next_node._key] = 1
                     main_river_flow[next_node._key] = flow_rate[next_node._key]
                 self.traverse_to_sea_from_dammed_junction(next_node, block_flow, visited, main_river_flow, flow_rate, index + 1)
-            # elif next_node._type == 'flowgauge':
-            #     self.traverse_to_sea_from_dammed_junction(next_node, block_flow, visited, main_river_flow, flow_rate, index + 1)
-            else:
-                current_index += 1
-                
-                
-            # print(f"{root._key} -> {next_node._key}")
             current_index += 1
             return
 
@@ -187,7 +180,7 @@ def read_location_file(file_path):
     water_network = WaterNetwork()
     base_key = first_row['Node']
     water_network._edge_list[base_key] = []
-    water_network._node_list[base_key] = []
+    
     
     for index in range(0, file_size): 
         row = location_list.iloc[index]
@@ -196,10 +189,13 @@ def read_location_file(file_path):
         y = row['y']
         type = row['type']
         link = row['linked']
+        if key == 1:
+            water_network._node_list[key] = water_network.Node(key, x, y)
         if key != base_key:
             base_key = key
             water_network._edge_list[key] = []    
-        water_network._node_list[key] = water_network.Node(key, x, y, type)
+            water_network._node_list[key] = water_network.Node(key, x, y)
+        water_network._node_list[key]._type.append(type)
         water_network._edge_list[key].append(link)
     water_network._size = len(water_network._edge_list)
     
@@ -214,11 +210,11 @@ def main():
     sorted_junction = water_network.bubble_sort_flow_rate(junction)
     print(sorted_junction)
     # head_water = water_network.headwater_in_range(Coordinates(220, 100), Coordinates(400, 300))
-    # print(head_water.keys())
+    # print(head_water.keys())0
     # print(water_network.dam_junction(49))
     print("\n\n\n\nQ3:")
     print(water_network.choose_dam_loc(57)) # choose dam at junction 57
-    print(water_network.all_flow_rate())
+    # print(water_network.all_flow_rate())
     
     
 if __name__ == "__main__":
