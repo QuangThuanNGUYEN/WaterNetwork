@@ -213,7 +213,7 @@ def main():
     # print(head_water.keys())0
     # print(water_network.dam_junction(49))
     print("\n\n\n\nQ3:")
-    print(water_network.choose_dam_loc(57)) # choose dam at junction 57
+    print(water_network.choose_dam_loc(57)) # locate dam at junction 57
     # print(water_network.all_flow_rate())
     
     
